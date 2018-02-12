@@ -22,7 +22,7 @@ __The model__:
 
 * `cte` and `epsi` are updated according to: 
 
-<img src="error-update.png" width="200" align="center">
+<img src="error-update.png" width="250" align="center">
 
 __Time step and Horizon time__:
 * I finally chose `N = 10, dt = 0.1`, i.e. predict 10 steps ahead and using 100ms as the timestep.
