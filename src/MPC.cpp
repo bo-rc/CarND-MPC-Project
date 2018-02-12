@@ -181,8 +181,8 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
     // steering
     const double radian25 = 0.436332;
     for (size_t i = delta_start; i < a_start; ++i) {
-	vars_lowerbound[i] = -radian25;
-	vars_upperbound[i] = +radian25;
+	vars_lowerbound[i] = -radian25*Lf;
+	vars_upperbound[i] = +radian25*Lf;
     }
 
     // throttle
