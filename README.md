@@ -31,10 +31,10 @@ __Time step and Horizon time__:
 __Polynomial Fitting and MPC processing__:
 * a [2nd-order polynomial](https://github.com/bo-rc/CarND-MPC-Project/blob/master/src/main.cpp#L123) is used for trajectory fitting.
  * since the time horizon is 1 second, which is shorter than the time finishing a full turn on the test track. So, a 2nd-order polynomial is good enough to represent the predicted trajectory.
-* waypoints are transformed from map frame to vehicle frame so that the error calculation becomes easier.
+* waypoints are [transformed](https://github.com/bo-rc/CarND-MPC-Project/blob/master/src/main.cpp#L102) from map frame to vehicle frame so that the [error calculation](https://github.com/bo-rc/CarND-MPC-Project/blob/master/src/main.cpp#L124)  becomes easier.
 
 __Model Predictive Control with Latency__:
-* a 100ms delay is used in the communication thread to model latency. Correspondingly, the control input is [delayed](https://github.com/bo-rc/CarND-MPC-Project/blob/master/src/MPC.cpp#L117) by 1 timestep, i.e. 100ms, to compensate the latency. Tests shows good result.
+* a 100ms delay is used in the communication thread to model latency. Correspondingly, the control input is [delayed](https://github.com/bo-rc/CarND-MPC-Project/blob/master/src/MPC.cpp#L117) by 1 timestep, i.e. 100ms, to compensate the latency. Tests showed good result.
 
 # Simulation full-lap running recording
 
