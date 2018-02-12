@@ -18,11 +18,11 @@ __The model__:
  * The elements are: `x, y, psi(heading angle), v, cte(cross track error), epsi(error of psi)`.
 * the motion model is as the following:
 
-<img src="vehicle-model.png" width="400" align="left">
+<img src="vehicle-model.png" width="200" align="center">
 
 * `cte` and `epsi` are updated according to: 
 
-<img src="error-update.png" width="400" align="left">
+<img src="error-update.png" width="200" align="center">
 
 __Time step and Horizon time__:
 * I finally chose `N = 10, dt = 0.1`, i.e. predict 10 steps ahead and using 100ms as the timestep.
