@@ -6,11 +6,20 @@
 using CppAD::AD;
 
 // TODO: Set the timestep length and duration
-const size_t N = 20; // 2 seconds horizon
-const double dt = 0.1; // 10Hz, 50ms
+const size_t N = 10; // 1 seconds horizon
+const double dt = 0.1; // 10Hz, 100ms
+// tuning parameters
+const float cte_gain = 2500;
+const float epsi_gain = 500;
+const float v_gain = 1;
+const float delta_gain = 500;
+const float a_gain = 1;
+const float delta_a_gain = 100;
+const float delta_s_gain = 10;
+const float a_s_gain = 10;
 
 // setting up array fields
-const double ref_v = 40;
+const double ref_v = 70;
 const size_t x_start = 0;
 const size_t y_start = x_start + N;
 const size_t psi_start = y_start + N;
@@ -32,6 +41,7 @@ const size_t a_start = delta_start + N - 1;
 // This is the length from front to CoG that has a similar radius.
 const double Lf = 2.67;
 
+
 class FG_eval {
 public:
     // Fitted polynomial coefficients
@@ -52,24 +62,24 @@ public:
 
 	// The part of the cost based on the reference state.
 	for (size_t t = 0; t < N; ++t) {
-	  fg[0] += 1000 * CppAD::pow(vars[cte_start + t], 2);
-	  fg[0] += 100 * CppAD::pow(vars[epsi_start + t], 2);
-	  fg[0] += CppAD::pow(vars[v_start + t] - ref_v, 2);
+	    fg[0] += cte_gain * CppAD::pow(vars[cte_start + t], 2);
+	    fg[0] += epsi_gain * CppAD::pow(vars[epsi_start + t], 2);
+	    fg[0] += v_gain * CppAD::pow(vars[v_start + t] - ref_v, 2);
 	}
 
 	// Minimize the use of actuators.
 	for (size_t t = 0; t < N - 1; ++t) {
-	  fg[0] += 500 * CppAD::pow(vars[delta_start + t], 2);
-	  fg[0] += CppAD::pow(vars[a_start + t], 2);
-	  // this inline was inspired by classmates' discussion
-	  // combined actuator effect
-	  fg[0] += 100*CppAD::pow(vars[delta_start + t] * vars[v_start+t], 2);
+	    fg[0] += delta_gain * CppAD::pow(vars[delta_start + t], 2);
+	    fg[0] += a_gain * CppAD::pow(vars[a_start + t], 2);
+	    // this inline was inspired by classmates' discussion
+	    // combined actuator effect
+	    fg[0] += delta_a_gain * CppAD::pow(vars[delta_start + t] * vars[v_start+t], 2);
 	}
 
 	// Minimize the value gap between sequential actuations.
 	for (size_t t = 0; t < N - 2; ++t) {
-	  fg[0] += 10 * CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
-	  fg[0] += 10 * CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
+	    fg[0] += delta_s_gain * CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+	    fg[0] += a_s_gain * CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
 	}
 
 	/*
@@ -83,41 +93,41 @@ public:
 	fg[1 + epsi_start] = vars[epsi_start];
 
 	for (size_t t = 1; t < N; ++t) {
-	  // The state at time t+1 .
-	  AD<double> x1 = vars[x_start + t];
-	  AD<double> y1 = vars[y_start + t];
-	  AD<double> psi1 = vars[psi_start + t];
-	  AD<double> v1 = vars[v_start + t];
-	  AD<double> cte1 = vars[cte_start + t];
-	  AD<double> epsi1 = vars[epsi_start + t];
+	    // The state at time t+1 .
+	    AD<double> x1 = vars[x_start + t];
+	    AD<double> y1 = vars[y_start + t];
+	    AD<double> psi1 = vars[psi_start + t];
+	    AD<double> v1 = vars[v_start + t];
+	    AD<double> cte1 = vars[cte_start + t];
+	    AD<double> epsi1 = vars[epsi_start + t];
 
-	  // The state at time t.
-	  AD<double> x0 = vars[x_start + t - 1];
-	  AD<double> y0 = vars[y_start + t - 1];
-	  AD<double> psi0 = vars[psi_start + t - 1];
-	  AD<double> v0 = vars[v_start + t - 1];
-	  AD<double> cte0 = vars[cte_start + t - 1];
-	  AD<double> epsi0 = vars[epsi_start + t - 1];
+	    // The state at time t.
+	    AD<double> x0 = vars[x_start + t - 1];
+	    AD<double> y0 = vars[y_start + t - 1];
+	    AD<double> psi0 = vars[psi_start + t - 1];
+	    AD<double> v0 = vars[v_start + t - 1];
+	    AD<double> cte0 = vars[cte_start + t - 1];
+	    AD<double> epsi0 = vars[epsi_start + t - 1];
 
-	  // Only consider the actuation at time t.
-	  AD<double> delta0 = vars[delta_start + t - 1];
-	  AD<double> a0 = vars[a_start + t - 1];
+	    // Only consider the actuation at time t.
+	    AD<double> delta0 = vars[delta_start + t - 1];
+	    AD<double> a0 = vars[a_start + t - 1];
 
-	  // use prev control command due to delay (100ms)
-	  if (t > 1) {
-	      delta0 = vars[delta_start + t - 1 - 1];
-	      a0 = vars[a_start + t - 1 - 1];
-	  }
+	    // use prev control command due to delay (100ms)
+	    if (t > 1) {
+		delta0 = vars[delta_start + t - 1 - 1];
+		a0 = vars[a_start + t - 1 - 1];
+	    }
 
-	  AD<double> f0 = coeffs[0] + coeffs[1] * x0 + coeffs[2] * CppAD::pow(x0, 2);
-	  AD<double> psides0 = CppAD::atan(coeffs[1] + 2 * coeffs[2] * x0);
-	  // kinematic model
-	  fg[1 + x_start + t] = x1 - (x0 + v0 * CppAD::cos(psi0) * dt);
-	  fg[1 + y_start + t] = y1 - (y0 + v0 * CppAD::sin(psi0) * dt);
-	  fg[1 + psi_start + t] = psi1 - (psi0 + v0 * delta0 / Lf * dt);
-	  fg[1 + v_start + t] = v1 - (v0 + a0 * dt);
-	  fg[1 + cte_start + t] = cte1 - ((f0 - y0) + (v0 * CppAD::sin(epsi0) * dt));
-	  fg[1 + epsi_start + t] = epsi1 - ((psi0 - psides0) + v0 * delta0 / Lf * dt);
+	    AD<double> f0 = coeffs[0] + coeffs[1] * x0 + coeffs[2] * CppAD::pow(x0, 2);
+	    AD<double> psides0 = CppAD::atan(coeffs[1] + 2 * coeffs[2] * x0);
+	    // kinematic model
+	    fg[1 + x_start + t] = x1 - (x0 + v0 * CppAD::cos(psi0) * dt);
+	    fg[1 + y_start + t] = y1 - (y0 + v0 * CppAD::sin(psi0) * dt);
+	    fg[1 + psi_start + t] = psi1 - (psi0 + v0 * delta0 / Lf * dt);
+	    fg[1 + v_start + t] = v1 - (v0 + a0 * dt);
+	    fg[1 + cte_start + t] = cte1 - ((f0 - y0) + (v0 * CppAD::sin(epsi0) * dt));
+	    fg[1 + epsi_start + t] = epsi1 - ((psi0 - psides0) + v0 * delta0 / Lf * dt);
 	}
     }
 };
@@ -254,8 +264,8 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
     result.push_back(solution.x[a_start]);
 
     for (size_t i = 0; i < N-1; i++) {
-      result.push_back(solution.x[x_start + i + 1]);
-      result.push_back(solution.x[y_start + i + 1]);
+	result.push_back(solution.x[x_start + i + 1]);
+	result.push_back(solution.x[y_start + i + 1]);
     }
 
     return result;
