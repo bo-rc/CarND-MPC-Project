@@ -29,7 +29,7 @@ __Time step and Horizon time__:
  * I've tested `N = 10, 20, dt = 0.05, 0.1`. Due to the assumption that the system delay is 100ms, using `dt = 0.1` is most convenient to model the latency. Computing 20 steps ahead of time does not make much difference in terms of performance, so the final choice is `N = 10, dt = 0.1`.
  
 __Polynomial Fitting and MPC processing__:
-* a 2nd-order polynomial is used for trajectory fitting.
+* a [2nd-order polynomial](https://github.com/bo-rc/CarND-MPC-Project/blob/master/src/main.cpp#L123) is used for trajectory fitting.
  * since the time horizon is 1 second, which is shorter than the time finishing a full turn on the test track. So, a 2nd-order polynomial is good enough to represent the predicted trajectory.
 * waypoints are transformed from map frame to vehicle frame so that the error calculation becomes easier.
 
